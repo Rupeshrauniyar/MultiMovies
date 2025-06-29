@@ -1,30 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML Page with Iframe</title>
+    <title>Autoembed with TMDB</title>
     <style>
         body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
         }
 
         iframe {
-            border: 1px solid #ccc;
-            width: 80%;
-            height: 500px;
-            border-radius: 8px;
+            border: 0;
+            border-radius: 10px;
+            margin: 20px 0;
         }
     </style>
 </head>
 
 <body>
-    <h1>HTML Page with an Iframe</h1>
-    <p>The iframe below displays another webpage:</p>
-    <iframe src="https://autoembed.co/movie/tmdb/1029827" width="100%" height="100%" frameborder="0" allowfullscreen>
+    <h1>Movie Embed using TMDB ID</h1>
+<h1>Lets try again okayt?</h1>
+    <!-- Iframe for Autoembed -->
+    <embed id="iframe" src width="80%" height="500" allowfullscreen>
+    </embed>
+
+    <script>
+        // Optionally, you can dynamically set the TMDB ID in the iframe
+        const tmdbId = 781732; // Example ID
+        document.getElementById("iframe").src = `https://autoembed.co/movie/tmdb/${tmdbId}`;
+    </script>
 </body>
 
 </html>
