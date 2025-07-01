@@ -5,31 +5,199 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MovieFlix - Demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
     <style>
         html {
             scroll-behavior: smooth;
         }
-
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #ef4444;
-            border-radius: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
+        body {
             background: #18181b;
-            border-radius: 8px;
+            color: #e4e4e7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: #ef4444 #18181b;
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 8px; }
+        ::-webkit-scrollbar-track { background: #18181b; border-radius: 8px; }
+        * { scrollbar-width: thin; scrollbar-color: #ef4444 #18181b; }
+        /* Navbar */
+        nav {
+            position: sticky; top: 0; background: #18181b; width: 100%; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 30; box-shadow: 0 2px 8px #0002;
         }
+        .nav-left { display: flex; align-items: center; gap: 24px; }
+        .nav-title { font-weight: bold; font-size: 2rem; color: #ef4444; }
+        .nav-link { color: #e4e4e7; text-decoration: none; transition: color 0.2s; font-size: 1rem; }
+        .nav-link:hover { color: #ef4444; }
+        .nav-search-wrap { position: relative; width: 256px; max-width: 100%; }
+        .nav-search {
+            display: flex; align-items: center; background: #27272a; border-radius: 9999px;
+            padding: 4px 12px; box-shadow: 0 1px 4px #0001;
+        }
+        .nav-search input {
+            background: transparent; border: none; outline: none; color: #e4e4e7;
+            width: 100%; padding: 4px 0; font-size: 1rem;
+        }
+        .nav-search input::placeholder { color: #a1a1aa; }
+        .search-results {
+            display: none; position: absolute; left: 0; top: 44px; width: 100%; max-height: 320px;
+            background: #27272a; border-radius: 16px; box-shadow: 0 4px 24px #0006;
+            z-index: 40; overflow-y: auto; border: 1px solid #3f3f46;
+        }
+        .search-results.active { display: block; }
+        /* Main Content */
+        main { flex: 1; padding-bottom: 96px; padding-left: 8px; padding-right: 8px; }
+        section { max-width: 1120px; margin: 0 auto; }
+        .section-title {
+            font-weight: bold; color: #e4e4e7; font-size: 2rem; margin-top: 32px; margin-bottom: 16px;
+            border-left: 4px solid #ef4444; padding-left: 12px;
+        }
+        .grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+        }
+        @media (min-width: 640px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 1024px) { .grid { grid-template-columns: repeat(6, 1fr); } }
+        .card {
+            background: #27272a; border-radius: 16px; box-shadow: 0 2px 8px #0004;
+            overflow: hidden; aspect-ratio: 2/3; position: relative; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: scale(1.05); }
+        .card img {
+            width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;
+        }
+        .card:hover img { transform: scale(1.10); }
+        .card-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, #000a 80%, #0003 30%, transparent 100%);
+            opacity: 0; display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 16px; transition: opacity 0.2s;
+        }
+        .card:hover .card-overlay { opacity: 1; }
+        .card-title {
+            color: #e4e4e7; font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .card-desc {
+            color: #d4d4d8; font-size: 0.85rem; margin-top: 4px; max-height: 2.5em; overflow: hidden; text-overflow: ellipsis;
+        }
+        /* Modal */
+        #videoModal {
+            position: fixed; inset: 0; background: #000c; display: flex; align-items: center; justify-content: center;
+            z-index: 50; display: none;
+        }
+        #videoModal.active { display: flex; }
+        .modal-content {
+            background: #18181b; border-radius: 16px; box-shadow: 0 8px 32px #000a;
+            padding: 16px; max-width: 768px; width: 100%; position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 8px; right: 8px; color: #a1a1aa; background: none; border: none;
+            font-size: 2rem; cursor: pointer; transition: color 0.2s;
+        }
+        .modal-close:hover { color: #ef4444; }
+        .modal-title { color: #e4e4e7; font-size: 1.2rem; font-weight: bold; margin-bottom: 8px; text-align: center; }
+        .server-buttons { display: flex; gap: 8px; margin-bottom: 8px; justify-content: center; }
+        .server-btn {
+            padding: 6px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 1rem;
+            background: #27272a; color: #e4e4e7; transition: background 0.2s, color 0.2s;
+        }
+        .server-btn.active, .server-btn:hover { background: #ef4444; color: #fff; }
+        .modal-iframe {
+            width: 100%; aspect-ratio: 16/9; border-radius: 12px; border: none; min-height: 300px; background: #000;
+        }
+        /* Footer */
+        footer {
+            width: 100%; background: #18181b; color: #a1a1aa; padding: 24px 16px; text-align: center;
+            box-shadow: 0 -2px 8px #0002; position: fixed; bottom: 0; left: 0; z-index: 20;
+        }
+        .footer-inner { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; }
+        .footer-text { font-size: 1rem; }
+        /* Utility */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 8px; }
+        .gap-6 { gap: 24px; }
+        .mb-2 { margin-bottom: 8px; }
+        .mb-4 { margin-bottom: 16px; }
+        .mt-8 { margin-top: 32px; }
+        .mt-12 { margin-top: 48px; }
+        .pb-24 { padding-bottom: 96px; }
+        .px-2 { padding-left: 8px; padding-right: 8px; }
+        .px-4 { padding-left: 16px; padding-right: 16px; }
+        .py-1 { padding-top: 4px; padding-bottom: 4px; }
+        .py-6 { padding-top: 24px; padding-bottom: 24px; }
+        .rounded-full { border-radius: 9999px; }
+        .rounded-xl { border-radius: 16px; }
+        .rounded-lg { border-radius: 12px; }
+        .rounded-2xl { border-radius: 24px; }
+        .shadow-lg { box-shadow: 0 4px 24px #0006; }
+        .shadow-2xl { box-shadow: 0 8px 32px #000a; }
+        .shadow-inner { box-shadow: 0 2px 8px #0002 inset; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .min-h-screen { min-height: 100vh; }
+        .aspect-video { aspect-ratio: 16/9; }
+        .aspect-\[2\/3\] { aspect-ratio: 2/3; }
+        .max-w-3xl { max-width: 768px; }
+        .max-w-7xl { max-width: 1120px; }
+        .max-w-xs { max-width: 320px; }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.95rem; }
+        .text-xl { font-size: 1.2rem; }
+        .text-2xl { font-size: 2rem; }
+        .text-3xl { font-size: 2.5rem; }
+        .font-bold { font-weight: bold; }
+        .font-semibold { font-weight: 600; }
+        .font-light { font-weight: 300; }
+        .text-red-500 { color: #ef4444; }
+        .text-zinc-100 { color: #f4f4f5; }
+        .text-zinc-200 { color: #e4e4e7; }
+        .text-zinc-300 { color: #d4d4d8; }
+        .text-zinc-400 { color: #a1a1aa; }
+        .text-zinc-900 { color: #18181b; }
+        .bg-zinc-800 { background: #27272a; }
+        .bg-zinc-900 { background: #18181b; }
+        .bg-black\/80 { background: #000c; }
+        .bg-transparent { background: transparent; }
+        .border { border: 1px solid #3f3f46; }
+        .border-l-4 { border-left: 4px solid #ef4444; }
+        .z-20 { z-index: 20; }
+        .z-30 { z-index: 30; }
+        .z-40 { z-index: 40; }
+        .z-50 { z-index: 50; }
+        .absolute { position: absolute; }
+        .relative { position: relative; }
+        .fixed { position: fixed; }
+        .top-0 { top: 0; }
+        .top-2 { top: 8px; }
+        .right-2 { right: 8px; }
+        .left-0 { left: 0; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .ml-3 { margin-left: 12px; }
+        .mb-6 { margin-bottom: 24px; }
+        .p-4 { padding: 16px; }
+        .pl-3 { padding-left: 12px; }
+        .w-12 { width: 48px; }
+        .h-16 { height: 64px; }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
+        .overflow-x-hidden { overflow-x: hidden; }
+        .transition { transition: all 0.2s; }
+        .transition-all { transition: all 0.2s; }
+        .transition-colors { transition: color 0.2s; }
+        .transition-opacity { transition: opacity 0.2s; }
+        .transition-transform { transition: transform 0.2s; }
+        .duration-300 { transition-duration: 0.3s; }
+        .group:hover .group-hover\:scale-110 { transform: scale(1.10); }
+        .group:hover .group-hover\:opacity-100 { opacity: 1; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 
